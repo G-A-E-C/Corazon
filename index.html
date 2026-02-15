@@ -132,7 +132,7 @@
             background-color: transparent;
             color: #FF0000;
             border: none;
-            border-bottom: 2px solid #FF0000;
+            border-bottom: 2px solid #ff3333;
             padding: 12px 20px;
             font-family: 'Share Tech Mono', monospace;
             font-size: 1.2rem;
@@ -144,6 +144,7 @@
             margin-bottom: 20px;
             letter-spacing: 2px;
             transition: all 0.3s ease;
+            caret-color: #ff3333;
         }
 
         .input-field::placeholder {
@@ -152,8 +153,8 @@
         }
 
         .input-field:focus {
-            border-bottom: 2px solid #FF0000;
-            box-shadow: 0 2px 10px #FF0000, 0 2px 20px rgba(255, 0, 0, 0.5);
+            border-bottom: 2px solid #ff3333;
+            box-shadow: 0 2px 10px #ff3333, 0 2px 20px rgba(255, 0, 0, 0.5);
             text-shadow: 0 0 8px #FF0000, 0 0 15px #FF0000;
         }
 
@@ -237,21 +238,100 @@
             font-family: 'Share Tech Mono', monospace;
         }
 
-        .cursor {
-            animation: blink 0.8s infinite;
-        }
-
-        @keyframes blink {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0; }
-        }
-
         canvas {
             display: none;
         }
 
         .crt-effect {
             position: relative;
+        }
+
+        /* ============================================ */
+        /* TWO-SCREEN SYSTEM STYLES */
+        /* ============================================ */
+        
+        .hidden {
+            display: none !important;
+        }
+
+        #input-screen {
+            width: 100%;
+            max-width: 900px;
+            transition: opacity 0.3s ease;
+        }
+
+        #result-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #result-screen canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .result-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background-color: transparent;
+            color: #FF0000;
+            border: 2px solid #FF0000;
+            padding: 10px 25px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px #FF0000;
+            letter-spacing: 1px;
+        }
+
+        .back-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #FF0000;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .back-btn:hover::before {
+            left: 0;
+        }
+
+        .back-btn:hover {
+            color: #000000;
+            box-shadow: 0 0 20px #FF0000;
+            text-shadow: none;
         }
 
         /* Boot Sequence Styles */
@@ -274,25 +354,11 @@
                 visibility: visible;
             }
         }
-
-        .boot-cursor {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-            color: #FF0000;
-            text-shadow: 0 0 10px #FF0000;
-            animation: blink 0.8s infinite;
-            z-index: 9999;
-        }
     </style>
 </head>
 <body>
-    <!-- Boot Cursor -->
-    <div id="bootCursor" class="boot-cursor">_</div>
-    
-    <div class="container crt-effect">
+    <!-- INPUT SCREEN -->
+    <div id="input-screen" class="container crt-effect">
         <h1 id="titleElement" class="title hidden-boot"></h1>
         
         <div id="quoteElement" class="friendship-quote hidden-boot"></div>
@@ -302,23 +368,26 @@
                 type="text" 
                 id="nameInput" 
                 class="input-field" 
-                placeholder="Ingresa un nombre o palabra..."
+                placeholder="Pon tu nombre corazón"
                 maxlength="20"
             >
             <br>
             <button id="generateBtn" class="button">▶ Generate Heart</button>
         </div>
 
-        <div id="heartContainer" class="heart-container hidden-boot">
-            <canvas id="heartCanvas" width="900" height="800"></canvas>
-        </div>
-
-        <div class="export-section" id="exportSection">
-            <button id="exportImageBtn" class="button">Export Image</button>
-            <button id="exportVideoBtn" class="button">Export Video</button>
-        </div>
-
         <div class="status" id="status"></div>
+    </div>
+
+    <!-- RESULT SCREEN (Full Screen) -->
+    <div id="result-screen" class="hidden">
+        <button id="backBtn" class="back-btn">&lt; BACK</button>
+        
+        <canvas id="heartCanvas"></canvas>
+        
+        <div class="result-controls">
+            <button id="exportImageBtn" class="button">💾 Export Image</button>
+            <button id="exportVideoBtn" class="button">🎥 Export Video</button>
+        </div>
     </div>
 
     <canvas id="recordCanvas"></canvas>
@@ -327,11 +396,13 @@
         const nameInput = document.getElementById('nameInput');
         const generateBtn = document.getElementById('generateBtn');
         const heartCanvas = document.getElementById('heartCanvas');
-        const exportSection = document.getElementById('exportSection');
         const exportImageBtn = document.getElementById('exportImageBtn');
         const exportVideoBtn = document.getElementById('exportVideoBtn');
         const status = document.getElementById('status');
         const recordCanvas = document.getElementById('recordCanvas');
+        const inputScreen = document.getElementById('input-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const backBtn = document.getElementById('backBtn');
 
         let isGenerating = false;
         let currentAnimation = null;
@@ -361,13 +432,11 @@
             nameInput.disabled = true;
             generateBtn.disabled = true;
             
-            const bootCursor = document.getElementById('bootCursor');
             const titleElement = document.getElementById('titleElement');
             const quoteElement = document.getElementById('quoteElement');
             const inputSection = document.getElementById('inputSection');
-            const heartContainer = document.getElementById('heartContainer');
             
-            // Wait a bit with just the cursor
+            // Wait a bit before starting
             await new Promise(resolve => setTimeout(resolve, 500));
             
             // Step 1: Type the Title
@@ -384,33 +453,25 @@
             inputSection.classList.add('fade-in');
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Step 4: Show Heart Container
-            heartContainer.classList.remove('hidden-boot');
-            heartContainer.classList.add('fade-in');
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Remove boot cursor
-            bootCursor.style.display = 'none';
-            
             // Enable interactions
             nameInput.disabled = false;
             generateBtn.disabled = false;
             
             // Show ready status
-            status.innerHTML = '> System ready. Enter name and generate heart...<span class="cursor">_</span>';
+            status.innerHTML = '> System ready. Enter name and generate heart...';
         }
 
         // ============================================
         // HEART GENERATION FUNCTIONS (FAIL-SAFE VERSION)
         // ============================================
 
-        // SCREEN GRID Heart Generation (CORRECTED LARGE VERSION)
+        // SCREEN GRID Heart Generation (FULL SCREEN VERSION)
         function generateHeartOnCanvas(text, canvas) {
             if (!text) text = '❤';
             
-            // FORCE VISIBLE DIMENSIONS
-            canvas.width = window.innerWidth * 0.9;
-            canvas.height = window.innerHeight * 0.7;
+            // FULL SCREEN DIMENSIONS
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             
             console.log("Canvas Size:", canvas.width, canvas.height);
             
@@ -419,12 +480,12 @@
             // Clear canvas completely
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate center coordinates
+            // Calculate center coordinates (MOVED UP to prevent tip cutoff)
             const centerX = canvas.width / 2;
-            const centerY = (canvas.height / 2) + 40; // Push down significantly for massive heart
+            const centerY = (canvas.height / 2) - 30; // Negative offset moves UP
             
-            // CINEMA MODE SCALE - /2.2 creates MASSIVE zoom (~2x larger)
-            const scale = Math.min(canvas.width, canvas.height) / 2.2;
+            // SAFE MASSIVE SCALE - /2.5 ensures no cutoff while staying huge
+            const scale = Math.min(canvas.width, canvas.height) / 2.5;
             
             console.log("Scale factor (pixels per unit):", scale);
             
@@ -444,7 +505,7 @@
             
             // Loop through SCREEN PIXELS (optimized for smoother edges)
             for (let y = 0; y < canvas.height; y += fontSize) {
-                for (let x = 0; x < canvas.width; x += fontSize * 0.5) { // Tighter X-step for definition
+                for (let x = 0; x < canvas.width; x += fontSize * 0.5) { // stepX = 15
                     
                     // Convert screen pixel to heart math coordinates (INVERSE)
                     const u = (x - centerX) / scale;
@@ -505,7 +566,7 @@
             });
         }
 
-        // Generate heart (main function) - FAIL-SAFE VERSION
+        // Generate heart (main function) - TWO-SCREEN VERSION
         async function generateHeart() {
             if (isGenerating) return;
             
@@ -524,30 +585,42 @@
             
             isGenerating = true;
             generateBtn.disabled = true;
-            exportSection.style.display = 'none';
-            status.innerHTML = '> Initializing terminal...<span class="cursor">_</span>';
+            status.innerHTML = '> Initializing terminal...';
             
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
             
-            status.innerHTML = '> Processing...<span class="cursor">_</span>';
+            // SWITCH TO RESULT SCREEN
+            inputScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
             
-            // Generate heart data
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Generate heart data (canvas is now full screen and visible)
             const heartData = generateHeartOnCanvas(text, canvas);
             
             // Animate the drawing
             await animateHeartGeneration(heartData);
             
-            status.innerHTML = '> Heart generated successfully! ✓';
-            exportSection.style.display = 'block';
             generateBtn.disabled = false;
             isGenerating = false;
             
             console.log("=== Generate Heart Complete ===");
         }
 
+        // Back button handler
+        function goBackToInput() {
+            // Hide result screen
+            resultScreen.classList.add('hidden');
+            // Show input screen
+            inputScreen.classList.remove('hidden');
+            // Clear canvas
+            const ctx = heartCanvas.getContext('2d');
+            ctx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
+        }
+
         // Export as image
         async function exportAsImage() {
-            status.innerHTML = '> Capturing image...<span class="cursor">_</span>';
+            status.innerHTML = '> Capturing image...';
             
             try {
                 const container = document.querySelector('.heart-container');
@@ -573,7 +646,7 @@
 
         // Export as video
         async function exportAsVideo() {
-            status.innerHTML = '> Recording video...<span class="cursor">_</span>';
+            status.innerHTML = '> Recording video...';
             exportVideoBtn.disabled = true;
             
             try {
@@ -709,6 +782,7 @@
 
         // Event listeners
         generateBtn.addEventListener('click', generateHeart);
+        backBtn.addEventListener('click', goBackToInput);
         
         nameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
