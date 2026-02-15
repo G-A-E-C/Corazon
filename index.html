@@ -328,6 +328,58 @@
             left: 0;
         }
 
+        /* Romantic Title Overlay */
+        .romantic-title {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .title-line-1 {
+            font-family: 'Share Tech Mono', 'VT323', monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff3333;
+            text-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333, 0 0 30px #ff3333;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .title-line-2 {
+            font-family: 'Share Tech Mono', 'VT323', monospace;
+            font-size: 1.5rem;
+            color: #ff6666;
+            text-shadow: 0 0 8px #ff3333, 0 0 15px #ff3333;
+            letter-spacing: 2px;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333, 0 0 30px #ff3333;
+            }
+            to {
+                text-shadow: 0 0 15px #ff3333, 0 0 30px #ff3333, 0 0 45px #ff3333, 0 0 60px #ff0000;
+            }
+        }
+
+        /* Mobile responsive title */
+        @media (max-width: 768px) {
+            .romantic-title {
+                top: 80px;
+            }
+            .title-line-1 {
+                font-size: 2rem;
+            }
+            .title-line-2 {
+                font-size: 1rem;
+            }
+        }
+
         .back-btn:hover {
             color: #000000;
             box-shadow: 0 0 20px #FF0000;
@@ -382,6 +434,12 @@
     <div id="result-screen" class="hidden">
         <button id="backBtn" class="back-btn">&lt; BACK</button>
         
+        <!-- Romantic Title Overlay -->
+        <div class="romantic-title">
+            <div class="title-line-1">TE QUIERO MUCHO</div>
+            <div class="title-line-2">GRACIAS POR ESTAR EN MI VIDA</div>
+        </div>
+        
         <canvas id="heartCanvas"></canvas>
         
         <div class="result-controls">
@@ -391,6 +449,11 @@
     </div>
 
     <canvas id="recordCanvas"></canvas>
+
+    <!-- Background Music -->
+    <audio id="bg-music" loop>
+        <source src="cancion.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         const nameInput = document.getElementById('nameInput');
@@ -808,9 +871,26 @@
         // BOOT SEQUENCE INITIALIZATION
         // ============================================
         
+        // Audio autoplay handling (browsers block autoplay)
+        function tryPlayMusic() {
+            const bgMusic = document.getElementById('bg-music');
+            bgMusic.play().catch(() => {
+                console.log('Autoplay blocked. Waiting for user interaction...');
+                // Play on first user interaction
+                const playOnInteraction = () => {
+                    bgMusic.play();
+                    document.body.removeEventListener('click', playOnInteraction);
+                    document.body.removeEventListener('keydown', playOnInteraction);
+                };
+                document.body.addEventListener('click', playOnInteraction);
+                document.body.addEventListener('keydown', playOnInteraction);
+            });
+        }
+        
         // Start boot sequence when page loads
         window.addEventListener('load', () => {
             bootTerminal();
+            tryPlayMusic();
         });
     </script>
 </body>
