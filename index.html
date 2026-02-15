@@ -421,10 +421,10 @@
             
             // Calculate center coordinates
             const centerX = canvas.width / 2;
-            const centerY = (canvas.height / 2) + 20; // Slight downward offset for visual balance
+            const centerY = (canvas.height / 2) + 40; // Push down significantly for massive heart
             
-            // INCREASED SCALE - /2.7 gives ~50% larger heart than /4
-            const scale = Math.min(canvas.width, canvas.height) / 2.7;
+            // CINEMA MODE SCALE - /2.2 creates MASSIVE zoom (~2x larger)
+            const scale = Math.min(canvas.width, canvas.height) / 2.2;
             
             console.log("Scale factor (pixels per unit):", scale);
             
@@ -442,9 +442,9 @@
             let charIndex = 0;
             let debugCount = 0;
             
-            // Loop through SCREEN PIXELS (prevents red blob)
+            // Loop through SCREEN PIXELS (optimized for smoother edges)
             for (let y = 0; y < canvas.height; y += fontSize) {
-                for (let x = 0; x < canvas.width; x += fontSize * 0.6) {
+                for (let x = 0; x < canvas.width; x += fontSize * 0.5) { // Tighter X-step for definition
                     
                     // Convert screen pixel to heart math coordinates (INVERSE)
                     const u = (x - centerX) / scale;
