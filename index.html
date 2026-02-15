@@ -378,6 +378,28 @@
             .title-line-2 {
                 font-size: 1rem;
             }
+            
+            /* Mobile input styling */
+            input[type="text"] {
+                width: 90%;
+                font-size: 1rem;
+            }
+            
+            /* Smaller buttons on mobile */
+            .button {
+                padding: 10px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .back-btn {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .result-controls {
+                bottom: 20px;
+                gap: 10px;
+            }
         }
 
         .back-btn:hover {
@@ -543,17 +565,21 @@
             // Clear canvas completely
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // RESPONSIVE: Detect mobile vs desktop
+            const isMobile = window.innerWidth < 768;
+            
             // Calculate center coordinates (pushed down for title space)
             const centerX = canvas.width / 2;
-            const centerY = (canvas.height / 2) + 30; // Slightly down to clear title
+            const centerY = (canvas.height / 2) + (isMobile ? 20 : 30); // Less offset on mobile
             
-            // Smaller scale for comfortable fit without cutoff
-            const scale = Math.min(canvas.width, canvas.height) / 4.2;
+            // Responsive scale: smaller on mobile to fit between title and buttons
+            const scale = Math.min(canvas.width, canvas.height) / (isMobile ? 5.5 : 4.2);
             
             console.log("Scale factor (pixels per unit):", scale);
+            console.log("Is Mobile:", isMobile);
             
-            // Font settings - Big & Readable
-            const fontSize = 30;
+            // Font settings - Responsive (smaller on mobile for better resolution)
+            const fontSize = isMobile ? 14 : 30;
             ctx.font = "bold " + fontSize + "px 'Share Tech Mono', 'VT323', monospace";
             ctx.fillStyle = '#ff0000';
             ctx.shadowColor = '#ff0000';
@@ -698,14 +724,18 @@
                 tempCtx.textBaseline = 'top';
                 
                 // Title Line 1: "TE QUIERO MUCHO"
-                tempCtx.font = "bold 3rem 'Share Tech Mono', monospace";
+                const isMobile = tempCanvas.width < 768;
+                const titleFontSize1 = isMobile ? '2rem' : '3rem';
+                const titleFontSize2 = isMobile ? '1rem' : '1.5rem';
+                
+                tempCtx.font = `bold ${titleFontSize1} 'Share Tech Mono', monospace`;
                 tempCtx.fillStyle = '#ff3333';
                 tempCtx.shadowColor = '#ff3333';
                 tempCtx.shadowBlur = 20;
                 tempCtx.fillText('TE QUIERO MUCHO', tempCanvas.width / 2, 50);
                 
                 // Title Line 2: "GRACIAS POR ESTAR EN MI VIDA"
-                tempCtx.font = "bold 1.5rem 'Share Tech Mono', monospace";
+                tempCtx.font = `bold ${titleFontSize2} 'Share Tech Mono', monospace`;
                 tempCtx.fillStyle = '#ff6666';
                 tempCtx.shadowBlur = 15;
                 tempCtx.fillText('GRACIAS POR ESTAR EN MI VIDA', tempCanvas.width / 2, 130);
@@ -911,6 +941,20 @@
         window.addEventListener('load', () => {
             bootTerminal();
             tryPlayMusic();
+        });
+        
+        // Handle screen resize/rotation (regenerate heart if on result screen)
+        window.addEventListener('resize', () => {
+            if (!resultScreen.classList.contains('hidden')) {
+                // User is on result screen, regenerate heart with new dimensions
+                const text = nameInput.value.trim() || '❤';
+                const heartData = generateHeartOnCanvas(text, heartCanvas);
+                // Draw all points immediately (no animation on resize)
+                const { points, ctx } = heartData;
+                points.forEach(point => {
+                    ctx.fillText(point.char, point.x, point.y);
+                });
+            }
         });
     </script>
 </body>
