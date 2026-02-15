@@ -480,12 +480,12 @@
             // Clear canvas completely
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate center coordinates (positive offset ensures top is visible)
+            // Calculate center coordinates (perfectly centered)
             const centerX = canvas.width / 2;
-            const centerY = (canvas.height / 2) + 15; // Positive offset moves heart down slightly
+            const centerY = canvas.height / 2; // Exact center
             
-            // SAFE MASSIVE SCALE - /2.5 ensures no cutoff while staying huge
-            const scale = Math.min(canvas.width, canvas.height) / 2.5;
+            // Smaller scale for comfortable fit without cutoff
+            const scale = Math.min(canvas.width, canvas.height) / 3.2;
             
             console.log("Scale factor (pixels per unit):", scale);
             
@@ -536,28 +536,28 @@
             return { points, ctx };
         }
 
-        // Animate heart generation point by point (30% slower with async delays)
+        // Animate heart generation with Retro Terminal Typing effect (slow & visible)
         async function animateHeartGeneration(heartData) {
             const { points, ctx } = heartData;
             
             console.log("Starting animation with", points.length, "points");
             
             // Sleep helper for async delays
-            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
             
             let currentIndex = 0;
-            const pointsPerBatch = 20; // Draw 20 points per batch
-            const delayBetweenBatches = 2; // 2ms delay between batches (creates ~3-4 second total animation)
+            const pointsPerBatch = 2; // Draw 1-2 characters at a time for retro typing effect
+            const delayBetweenBatches = 10; // 10ms delay = slow, visible character-by-character animation
             
             while (currentIndex < points.length) {
-                // Draw a batch of points
+                // Draw a small batch of points
                 for (let i = 0; i < pointsPerBatch && currentIndex < points.length; i++) {
                     const point = points[currentIndex];
                     ctx.fillText(point.char, point.x, point.y);
                     currentIndex++;
                 }
                 
-                // Async delay to slow down animation and prevent browser freeze
+                // Async delay to create retro terminal typing effect
                 await sleep(delayBetweenBatches);
             }
             
