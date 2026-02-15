@@ -330,8 +330,8 @@
 
         /* Romantic Title Overlay */
         .romantic-title {
-            position: fixed;
-            top: 100px;
+            position: absolute;
+            top: 50px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 20;
@@ -543,12 +543,12 @@
             // Clear canvas completely
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate center coordinates (perfectly centered)
+            // Calculate center coordinates (pushed down for title space)
             const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2; // Exact center
+            const centerY = (canvas.height / 2) + 30; // Slightly down to clear title
             
             // Smaller scale for comfortable fit without cutoff
-            const scale = Math.min(canvas.width, canvas.height) / 3.2;
+            const scale = Math.min(canvas.width, canvas.height) / 4.2;
             
             console.log("Scale factor (pixels per unit):", scale);
             
@@ -679,10 +679,10 @@
             ctx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
         }
 
-        // Export as image
+        // Export as image (includes romantic title)
         async function exportAsImage() {
             try {
-                // Create a temporary canvas with black background
+                // Create a temporary canvas with same dimensions
                 const tempCanvas = document.createElement('canvas');
                 tempCanvas.width = heartCanvas.width;
                 tempCanvas.height = heartCanvas.height;
@@ -692,6 +692,26 @@
                 // Fill with black background
                 tempCtx.fillStyle = '#000000';
                 tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw the romantic title at the top
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'top';
+                
+                // Title Line 1: "TE QUIERO MUCHO"
+                tempCtx.font = "bold 3rem 'Share Tech Mono', monospace";
+                tempCtx.fillStyle = '#ff3333';
+                tempCtx.shadowColor = '#ff3333';
+                tempCtx.shadowBlur = 20;
+                tempCtx.fillText('TE QUIERO MUCHO', tempCanvas.width / 2, 50);
+                
+                // Title Line 2: "GRACIAS POR ESTAR EN MI VIDA"
+                tempCtx.font = "bold 1.5rem 'Share Tech Mono', monospace";
+                tempCtx.fillStyle = '#ff6666';
+                tempCtx.shadowBlur = 15;
+                tempCtx.fillText('GRACIAS POR ESTAR EN MI VIDA', tempCanvas.width / 2, 130);
+                
+                // Reset shadow for heart
+                tempCtx.shadowBlur = 0;
                 
                 // Draw the heart canvas on top
                 tempCtx.drawImage(heartCanvas, 0, 0);
