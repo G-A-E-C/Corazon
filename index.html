@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Love Terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #FF0000;
+            font-family: 'Share Tech Mono', 'VT323', 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* CRT Scanline Effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* CRT Flicker Effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            pointer-events: none;
+            animation: flicker-screen 0.15s infinite;
+            z-index: 999;
+        }
+
+        @keyframes flicker-screen {
+            0% { opacity: 0.27861; }
+            5% { opacity: 0.34769; }
+            10% { opacity: 0.23604; }
+            15% { opacity: 0.90626; }
+            20% { opacity: 0.18128; }
+            25% { opacity: 0.83891; }
+            30% { opacity: 0.65583; }
+            35% { opacity: 0.67807; }
+            40% { opacity: 0.26559; }
+            45% { opacity: 0.84693; }
+            50% { opacity: 0.96019; }
+            55% { opacity: 0.08594; }
+            60% { opacity: 0.20313; }
+            65% { opacity: 0.71988; }
+            70% { opacity: 0.53455; }
+            75% { opacity: 0.37288; }
+            80% { opacity: 0.71428; }
+            85% { opacity: 0.70419; }
+            90% { opacity: 0.7003; }
+            95% { opacity: 0.36108; }
+            100% { opacity: 0.24387; }
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            font-family: 'VT323', monospace;
+            letter-spacing: 4px;
+            text-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000, 0 0 20px #FF0000, 0 0 40px #FF0000;
+            animation: title-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes title-glow {
+            0% { 
+                text-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000, 0 0 20px #FF0000, 0 0 40px #FF0000;
+            }
+            100% { 
+                text-shadow: 0 0 10px #FF0000, 0 0 20px #FF0000, 0 0 30px #FF0000, 0 0 50px #FF0000, 0 0 60px #FF0000;
+            }
+        }
+
+        .friendship-quote {
+            font-size: 1rem;
+            margin-bottom: 40px;
+            padding: 20px 10px;
+            text-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000;
+            line-height: 1.8;
+            background: transparent;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            margin-bottom: 40px;
+        }
+
+        .input-field {
+            background-color: transparent;
+            color: #FF0000;
+            border: none;
+            border-bottom: 2px solid #FF0000;
+            padding: 12px 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            width: 350px;
+            max-width: 100%;
+            text-align: center;
+            outline: none;
+            text-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field::placeholder {
+            color: #660000;
+            opacity: 0.7;
+        }
+
+        .input-field:focus {
+            border-bottom: 2px solid #FF0000;
+            box-shadow: 0 2px 10px #FF0000, 0 2px 20px rgba(255, 0, 0, 0.5);
+            text-shadow: 0 0 8px #FF0000, 0 0 15px #FF0000;
+        }
+
+        .button {
+            background-color: transparent;
+            color: #FF0000;
+            border: 2px solid #FF0000;
+            padding: 12px 30px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-shadow: 0 0 5px #FF0000;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #FF0000;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .button:hover::before {
+            left: 0;
+        }
+
+        .button:hover {
+            color: #000000;
+            box-shadow: 0 0 20px #FF0000, 0 0 30px #FF0000;
+            text-shadow: none;
+            border-color: #FF0000;
+        }
+
+        .button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .button:disabled:hover::before {
+            left: -100%;
+        }
+
+        .heart-container {
+            background-color: transparent;
+            padding: 20px;
+            margin: 20px auto;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #heartCanvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.5));
+        }
+
+        .export-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 0.95rem;
+            min-height: 25px;
+            text-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .cursor {
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .crt-effect {
+            position: relative;
+        }
+
+        /* Boot Sequence Styles */
+        .hidden-boot {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                visibility: hidden;
+            }
+            to {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        .boot-cursor {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: #FF0000;
+            text-shadow: 0 0 10px #FF0000;
+            animation: blink 0.8s infinite;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Boot Cursor -->
+    <div id="bootCursor" class="boot-cursor">_</div>
+    
+    <div class="container crt-effect">
+        <h1 id="titleElement" class="title hidden-boot"></h1>
+        
+        <div id="quoteElement" class="friendship-quote hidden-boot"></div>
+
+        <div id="inputSection" class="input-section hidden-boot">
+            <input 
+                type="text" 
+                id="nameInput" 
+                class="input-field" 
+                placeholder="Ingresa un nombre o palabra..."
+                maxlength="20"
+            >
+            <br>
+            <button id="generateBtn" class="button">▶ Generate Heart</button>
+        </div>
+
+        <div id="heartContainer" class="heart-container hidden-boot">
+            <canvas id="heartCanvas" width="900" height="800"></canvas>
+        </div>
+
+        <div class="export-section" id="exportSection">
+            <button id="exportImageBtn" class="button">Export Image</button>
+            <button id="exportVideoBtn" class="button">Export Video</button>
+        </div>
+
+        <div class="status" id="status"></div>
+    </div>
+
+    <canvas id="recordCanvas"></canvas>
+
+    <script>
+        const nameInput = document.getElementById('nameInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const heartCanvas = document.getElementById('heartCanvas');
+        const exportSection = document.getElementById('exportSection');
+        const exportImageBtn = document.getElementById('exportImageBtn');
+        const exportVideoBtn = document.getElementById('exportVideoBtn');
+        const status = document.getElementById('status');
+        const recordCanvas = document.getElementById('recordCanvas');
+
+        let isGenerating = false;
+        let currentAnimation = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+
+        // ============================================
+        // BOOT SEQUENCE FUNCTIONS
+        // ============================================
+
+        // TypeWriter Effect Function
+        async function typeWriter(element, text, speed = 30) {
+            element.textContent = '';
+            element.classList.remove('hidden-boot');
+            element.style.opacity = '1';
+            element.style.visibility = 'visible';
+            
+            for (let i = 0; i < text.length; i++) {
+                element.textContent += text.charAt(i);
+                await new Promise(resolve => setTimeout(resolve, speed));
+            }
+        }
+
+        // Terminal Boot Sequence
+        async function bootTerminal() {
+            // Disable all interactions
+            nameInput.disabled = true;
+            generateBtn.disabled = true;
+            
+            const bootCursor = document.getElementById('bootCursor');
+            const titleElement = document.getElementById('titleElement');
+            const quoteElement = document.getElementById('quoteElement');
+            const inputSection = document.getElementById('inputSection');
+            const heartContainer = document.getElementById('heartContainer');
+            
+            // Wait a bit with just the cursor
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 1: Type the Title
+            await typeWriter(titleElement, '> LOVE TERMINAL <', 50);
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Step 2: Type the Quote
+            const quoteText = 'Eres el mejor regalo que me dio el destino';
+            await typeWriter(quoteElement, quoteText, 20);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 3: Fade in Input Section
+            inputSection.classList.remove('hidden-boot');
+            inputSection.classList.add('fade-in');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 4: Show Heart Container
+            heartContainer.classList.remove('hidden-boot');
+            heartContainer.classList.add('fade-in');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Remove boot cursor
+            bootCursor.style.display = 'none';
+            
+            // Enable interactions
+            nameInput.disabled = false;
+            generateBtn.disabled = false;
+            
+            // Show ready status
+            status.innerHTML = '> System ready. Enter name and generate heart...<span class="cursor">_</span>';
+        }
+
+        // ============================================
+        // HEART GENERATION FUNCTIONS (FAIL-SAFE VERSION)
+        // ============================================
+
+        // FAIL-SAFE Heart Generation with Grid Scan
+        function generateHeartOnCanvas(text, canvas) {
+            if (!text) text = '❤';
+            
+            // FORCE VISIBLE DIMENSIONS (Do NOT rely on container)
+            canvas.width = window.innerWidth * 0.9;  // 90% of screen width
+            canvas.height = window.innerHeight * 0.7; // 70% of screen height
+            
+            console.log("Canvas Size:", canvas.width, canvas.height);
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas completely
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate center coordinates
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Fail-safe scale calculation
+            const scale = Math.min(canvas.width, canvas.height) / 4.5;
+            
+            // Force visibility settings
+            ctx.font = "bold 20px 'Share Tech Mono', 'VT323', monospace";
+            ctx.fillStyle = '#ff0000';
+            ctx.shadowColor = '#ff0000';
+            ctx.shadowBlur = 10;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Generate all heart points using GRID SCAN
+            const points = [];
+            let charIndex = 0;
+            let debugCount = 0;
+            
+            // Integer loop for grid scan (FAIL-SAFE)
+            for (let y = -30; y <= 30; y++) {
+                for (let x = -30; x <= 30; x++) {
+                    // Convert to cartesian coordinates
+                    let rX = x / 10;
+                    let rY = y / 10;
+                    
+                    // The Formula: (x²+y²-1)³ - x²y³
+                    let check = Math.pow(rX * rX + rY * rY - 1, 3) - rX * rX * Math.pow(rY, 3);
+                    
+                    // The Condition: if inside heart shape
+                    if (check <= 0) {
+                        // Drawing position (spread out)
+                        const drawX = centerX + (x * 2.5);
+                        const drawY = centerY - (y * 2.5); // MINUS for flip
+                        
+                        // Debug first few points
+                        if (debugCount < 5) {
+                            console.log("Drawing point at:", drawX, drawY, "char:", text[charIndex % text.length]);
+                            debugCount++;
+                        }
+                        
+                        points.push({
+                            x: drawX,
+                            y: drawY,
+                            char: text[charIndex % text.length]
+                        });
+                        charIndex++;
+                    }
+                }
+            }
+            
+            console.log("Total points generated:", points.length);
+            
+            return { points, ctx };
+        }
+
+        // Animate heart generation point by point
+        async function animateHeartGeneration(heartData) {
+            const { points, ctx } = heartData;
+            
+            console.log("Starting animation with", points.length, "points");
+            
+            return new Promise((resolve) => {
+                let currentIndex = 0;
+                const pointsPerFrame = 25; // Draw multiple points per frame
+                
+                function drawNextBatch() {
+                    if (currentIndex < points.length) {
+                        // Draw a batch of points
+                        for (let i = 0; i < pointsPerFrame && currentIndex < points.length; i++) {
+                            const point = points[currentIndex];
+                            ctx.fillText(point.char, point.x, point.y);
+                            currentIndex++;
+                        }
+                        // Use requestAnimationFrame for smooth 60fps animation
+                        requestAnimationFrame(drawNextBatch);
+                    } else {
+                        console.log("Animation complete!");
+                        resolve();
+                    }
+                }
+                
+                drawNextBatch();
+            });
+        }
+
+        // Generate heart (main function) - FAIL-SAFE VERSION
+        async function generateHeart() {
+            if (isGenerating) return;
+            
+            console.log("=== Generate Heart Started ===");
+            
+            const text = nameInput.value.trim() || '❤';
+            const canvas = heartCanvas;
+            
+            if (!canvas) {
+                console.error("Canvas not found!");
+                status.innerHTML = '> Error: Canvas not found ✗';
+                return;
+            }
+            
+            console.log("Canvas element found:", canvas);
+            
+            isGenerating = true;
+            generateBtn.disabled = true;
+            exportSection.style.display = 'none';
+            status.innerHTML = '> Initializing terminal...<span class="cursor">_</span>';
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            status.innerHTML = '> Processing...<span class="cursor">_</span>';
+            
+            // Generate heart data
+            const heartData = generateHeartOnCanvas(text, canvas);
+            
+            // Animate the drawing
+            await animateHeartGeneration(heartData);
+            
+            status.innerHTML = '> Heart generated successfully! ✓';
+            exportSection.style.display = 'block';
+            generateBtn.disabled = false;
+            isGenerating = false;
+            
+            console.log("=== Generate Heart Complete ===");
+        }
+
+        // Export as image
+        async function exportAsImage() {
+            status.innerHTML = '> Capturing image...<span class="cursor">_</span>';
+            
+            try {
+                const container = document.querySelector('.heart-container');
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#000000',
+                    scale: 2
+                });
+                
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `heart_${Date.now()}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    status.innerHTML = '> Image exported successfully! ✓';
+                });
+            } catch (error) {
+                status.innerHTML = '> Error exporting image ✗';
+                console.error(error);
+            }
+        }
+
+        // Export as video
+        async function exportAsVideo() {
+            status.innerHTML = '> Recording video...<span class="cursor">_</span>';
+            exportVideoBtn.disabled = true;
+            
+            try {
+                // Setup canvas for recording (Full HD resolution)
+                const ctx = recordCanvas.getContext('2d');
+                recordCanvas.width = 1920;
+                recordCanvas.height = 1080;
+                
+                // Start recording
+                const stream = recordCanvas.captureStream(30);
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp9',
+                    videoBitsPerSecond: 2500000
+                });
+                
+                recordedChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `heart_animation_${Date.now()}.webm`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    status.innerHTML = '> Video exported successfully! ✓';
+                    exportVideoBtn.disabled = false;
+                };
+                
+                mediaRecorder.start();
+                
+                // Draw animation on canvas
+                await drawVideoFrames(ctx);
+                
+                // Stop recording
+                mediaRecorder.stop();
+                
+            } catch (error) {
+                status.innerHTML = '> Error exporting video ✗';
+                console.error(error);
+                exportVideoBtn.disabled = false;
+            }
+        }
+
+        // Draw frames for video
+        async function drawVideoFrames(ctx) {
+            const text = nameInput.value.trim() || '❤';
+            
+            const canvasWidth = recordCanvas.width;
+            const canvasHeight = recordCanvas.height;
+            const centerX = canvasWidth / 2;
+            const centerY = canvasHeight / 2;
+            
+            // Clear canvas with black background
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Setup text styling
+            ctx.fillStyle = '#FF0000';
+            ctx.shadowColor = '#FF0000';
+            ctx.shadowBlur = 15;
+            ctx.textAlign = 'center';
+            
+            // ===== DRAW TITLE =====
+            ctx.font = 'bold 48px "Share Tech Mono", "Courier New"';
+            ctx.fillText('> LOVE TERMINAL <', centerX, 80);
+            
+            // Add extra glow to title
+            ctx.shadowBlur = 25;
+            ctx.fillText('> LOVE TERMINAL <', centerX, 80);
+            ctx.shadowBlur = 15;
+            
+            // ===== DRAW QUOTE =====
+            ctx.font = '28px "Share Tech Mono", "Courier New"';
+            ctx.shadowBlur = 10;
+            
+            // Single line quote
+            const quoteText = 'Eres el mejor regalo que me dio el destino';
+            ctx.fillText(quoteText, centerX, 160);
+            
+            // Wait a moment before starting heart animation
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // ===== DRAW HEART (CENTERED) =====
+            ctx.font = '20px "Share Tech Mono", "VT323", "Courier New"';
+            ctx.shadowBlur = 15;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Generate heart points using the same algorithm
+            const scale = 350; // Larger scale for video
+            const heartCenterY = centerY + 50;
+            
+            const points = [];
+            let charIndex = 0;
+            const step = 0.05;
+            
+            for (let y = 1.5; y >= -1.5; y -= step) {
+                for (let x = -1.5; x <= 1.5; x += step) {
+                    const value = Math.pow(x * x + y * y - 1, 3) - x * x * y * y * y;
+                    
+                    if (value <= 0) {
+                        points.push({
+                            x: (x * scale) + centerX,
+                            y: (-y * scale) + heartCenterY,
+                            char: text[charIndex % text.length]
+                        });
+                        charIndex++;
+                    }
+                }
+            }
+            
+            // Animate character by character
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                ctx.fillText(point.char, point.x, point.y);
+                
+                // Draw multiple at once for faster animation
+                if (i % 10 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 16));
+                }
+            }
+            
+            // Hold final frame
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+
+        // Event listeners
+        generateBtn.addEventListener('click', generateHeart);
+        
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                generateHeart();
+            }
+        });
+        
+        exportImageBtn.addEventListener('click', exportAsImage);
+        exportVideoBtn.addEventListener('click', exportAsVideo);
+
+        // ============================================
+        // BOOT SEQUENCE INITIALIZATION
+        // ============================================
+        
+        // Start boot sequence when page loads
+        window.addEventListener('load', () => {
+            bootTerminal();
+        });
+    </script>
+</body>
+</html>
