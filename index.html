@@ -480,9 +480,9 @@
             // Clear canvas completely
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Calculate center coordinates (MOVED UP to prevent tip cutoff)
+            // Calculate center coordinates (positive offset ensures top is visible)
             const centerX = canvas.width / 2;
-            const centerY = (canvas.height / 2) - 30; // Negative offset moves UP
+            const centerY = (canvas.height / 2) + 15; // Positive offset moves heart down slightly
             
             // SAFE MASSIVE SCALE - /2.5 ensures no cutoff while staying huge
             const scale = Math.min(canvas.width, canvas.height) / 2.5;
@@ -536,34 +536,32 @@
             return { points, ctx };
         }
 
-        // Animate heart generation point by point
+        // Animate heart generation point by point (30% slower with async delays)
         async function animateHeartGeneration(heartData) {
             const { points, ctx } = heartData;
             
             console.log("Starting animation with", points.length, "points");
             
-            return new Promise((resolve) => {
-                let currentIndex = 0;
-                const pointsPerFrame = 25; // Draw multiple points per frame
-                
-                function drawNextBatch() {
-                    if (currentIndex < points.length) {
-                        // Draw a batch of points
-                        for (let i = 0; i < pointsPerFrame && currentIndex < points.length; i++) {
-                            const point = points[currentIndex];
-                            ctx.fillText(point.char, point.x, point.y);
-                            currentIndex++;
-                        }
-                        // Use requestAnimationFrame for smooth 60fps animation
-                        requestAnimationFrame(drawNextBatch);
-                    } else {
-                        console.log("Animation complete!");
-                        resolve();
-                    }
+            // Sleep helper for async delays
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            
+            let currentIndex = 0;
+            const pointsPerBatch = 20; // Draw 20 points per batch
+            const delayBetweenBatches = 2; // 2ms delay between batches (creates ~3-4 second total animation)
+            
+            while (currentIndex < points.length) {
+                // Draw a batch of points
+                for (let i = 0; i < pointsPerBatch && currentIndex < points.length; i++) {
+                    const point = points[currentIndex];
+                    ctx.fillText(point.char, point.x, point.y);
+                    currentIndex++;
                 }
                 
-                drawNextBatch();
-            });
+                // Async delay to slow down animation and prevent browser freeze
+                await sleep(delayBetweenBatches);
+            }
+            
+            console.log("Animation complete!");
         }
 
         // Generate heart (main function) - TWO-SCREEN VERSION
